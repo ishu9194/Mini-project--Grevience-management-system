@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GrievanceHub - Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="dashboard.css" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark fixed-top shadow-lg navbar-main" style="background: linear-gradient(135deg, #FF6B35 0%, #F7931E 100%); z-index: 1030;">
+        <div class="container-fluid">
+            <a class="navbar-brand fw-bold fs-3 brand-glow" href="#">
+                <i class="fas fa-balance-scale me-2"></i>GrievanceHub
+            </a>
+            <button class="btn btn-outline-light btn-sm fw-bold logout-btn ms-auto">
+                <i class="fas fa-sign-out-alt me-1"></i>Logout
+            </button>
+        </div>
+    </nav>
+
+    <div class="d-flex wrapper">
+        <div class="sidebar shadow-lg" id="sidebar">
+            <div class="profile-section text-center py-4 border-bottom">
+                <div class="profile-pic-container">
+                    <img id="profilePic" src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" alt="Profile" class="profile-pic" style="cursor: pointer;">
+                    <input type="file" id="profileImageUpload" style="display: none;" accept="image/*">
+                </div>
+                <h5 id="userNameDisplay" class="mt-3 mb-0 fw-bold text-white"></h5>
+                <small class="text-muted">Student</small>
+            </div>
+
+            <nav class="nav flex-column p-3">
+                <a class="nav-link active-nav sidebar-link" onclick="showSection('dashboard')">
+                    <i class="fas fa-th-large me-2"></i>Dashboard / Lodge
+                </a>
+                <a class="nav-link sidebar-link" onclick="showSection('account')">
+                    <i class="fas fa-cog me-2"></i>Account Settings
+                </a>
+                <a class="nav-link sidebar-link" onclick="showSection('history')">
+                    <i class="fas fa-history me-2"></i>Complaint History
+                </a>
+            </nav>
+        </div>
+
+        <div class="flex-grow-1 main-content-wrapper">
+            <main class="main-content p-4">
+                <section id="dashboard-section">
+                    <div class="row mb-5">
+                        <div class="col-lg-4 col-md-6 mb-4">
+                            <div class="stat-card pending-card">
+                                <div class="card-body text-center p-4">
+                                    <i class="fas fa-clock fs-1 text-danger mb-3"></i>
+                                    <h3 class="fw-bold fs-1 mb-1" id="stat-pending">0</h3>
+                                    <p class="text-muted mb-0">Not Processed</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-4 col-md-6 mb-4">
+                            <div class="stat-card process-card">
+                                <div class="card-body text-center p-4">
+                                    <i class="fas fa-spinner fa-spin fs-1 text-warning mb-3"></i>
+                                    <h3 class="fw-bold fs-1 mb-1" id="stat-process">0</h3>
+                                    <p class="text-muted mb-0">In Process</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-4 col-md-6 mb-4">
+                            <div class="stat-card closed-card">
+                                <div class="card-body text-center p-4">
+                                    <i class="fas fa-check-circle fs-1 text-success mb-3"></i>
+                                    <h3 class="fw-bold fs-1 mb-1" id="stat-closed">0</h3>
+                                    <p class="text-muted mb-0">Closed</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="complaint-form-card shadow-lg">
+                        <div class="card-header bg-gradient text-white p-4">
+                            <i class="fas fa-edit me-2"></i>
+                            <h4 class="mb-0 fw-bold">Register New Complaint</h4>
+                        </div>
+                        <form id="complaintForm" class="p-5">
+                            <div class="row">
+                                <div class="col-md-6 mb-4">
+                                    <label class="form-label fw-bold">Category <span class="text-danger">*</span></label>
+                                    <select id="category" class="form-select form-select-lg" required>
+                                        <option value="">Choose Category</option>
+                                    </select>
+                                    <input type="text" id="customCategory" class="form-control form-control-lg mt-2" placeholder="Please specify category..." style="display: none;">
+                                </div>
+
+                                <div class="col-md-6 mb-4">
+                                    <label class="form-label fw-bold">Sub Category <span class="text-danger">*</span></label>
+                                    <select id="subcategory" class="form-select form-select-lg" required>
+                                        <option value="">Select Subcategory</option>
+                                    </select>
+                                    <input type="text" id="customSubcategory" class="form-control form-control-lg mt-2" placeholder="Please specify subcategory..." style="display: none;">
+                                </div>
+                                <div class="col-md-6 mb-4">
+                                    <label class="form-label fw-bold">Complaint Type</label>
+                                    <select id="type" class="form-select form-select-lg">
+                                        <option>Complaint</option>
+                                        <option>Query</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6 mb-4">
+                                    <label class="form-label fw-bold">Nature of Complaint</label>
+                                    <input id="nature" type="text" class="form-control form-control-lg" placeholder="e.g. University">
+                                </div>
+                            </div>
+
+                            <div class="mb-5">
+                                <label class="form-label fw-bold">Complaint Details <span class="text-danger">*</span></label>
+                                <textarea id="details" rows="6" class="form-control" placeholder="Describe your complaint in detail..." required></textarea>
+                            </div>
+
+                            <div class="mb-5">
+                                <label class="form-label fw-bold">Attachments (Optional)</label>
+                                <input type="file" class="form-control">
+                            </div>
+
+                            <button type="submit" class="btn btn-primary btn-lg px-5 py-3 fw-bold w-100 submit-btn">
+                                <i class="fas fa-paper-plane me-2"></i>Submit Complaint
+                            </button>
+                        </form>
+                    </div>
+                </section>
+
+                <section id="account-section" class="section-hidden">
+                    <div class="profile-card shadow-lg">
+                        <div class="card-header bg-gradient text-white p-4">
+                            <i class="fas fa-user me-2"></i>
+                            <h4 id="profileTitle" class="mb-0 fw-bold">Profile Settings</h4>
+                        </div>
+                        <div class="p-5">
+                            <div class="row g-4">
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold text-muted small text-uppercase tracking-wide">Full Name</label>
+                                    <input id="fullNameInput" type="text" class="form-control form-control-lg">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold text-muted small text-uppercase tracking-wide">User Email</label>
+                                    <input id="emailInput" type="email" class="form-control form-control-lg bg-light" readonly>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold text-muted small text-uppercase tracking-wide">PRN / Enrollment Number</label>
+                                    <input id="prnInput" type="text" class="form-control form-control-lg">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold text-muted small text-uppercase tracking-wide">University</label>
+                                    <input id="universityInput" type="text" class="form-control form-control-lg">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold text-muted small text-uppercase tracking-wide">College</label>
+                                    <input id="collegeInput" type="text" class="form-control form-control-lg">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold text-muted small text-uppercase tracking-wide">Department</label>
+                                    <input id="departmentInput" type="text" class="form-control form-control-lg">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold text-muted small text-uppercase tracking-wide">Year</label>
+                                    <input id="yearInput" type="text" class="form-control form-control-lg bg-light" readonly>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold text-muted small text-uppercase tracking-wide">Contact</label>
+                                    <input id="contactInput" type="text" class="form-control form-control-lg">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold text-muted small text-uppercase tracking-wide">State</label>
+                                    <input id="stateInput" type="text" class="form-control form-control-lg">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold text-muted small text-uppercase tracking-wide">Country</label>
+                                    <input id="countryInput" type="text" class="form-control form-control-lg">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold text-muted small text-uppercase tracking-wide">Pincode</label>
+                                    <input id="pincodeInput" type="text" class="form-control form-control-lg">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold text-muted small text-uppercase tracking-wide">Reg Date</label>
+                                    <input id="regDateInput" type="text" class="form-control form-control-lg bg-light" readonly>
+                                </div>
+                            </div>
+                            <div class="mt-5 pt-4 border-top">
+                                <button id="updateProfileBtn" class="btn btn-success btn-lg w-100 py-3 fw-bold">
+                                    <i class="fas fa-save me-2"></i>Update Profile
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="history-section" class="section-hidden min-vh-100">
+                    <div class="history-card shadow-lg h-100">
+                        <div class="card-header bg-gradient text-white p-4 d-flex justify-content-between align-items-center">
+                            <h4 class="mb-0 fw-bold">
+                                <i class="fas fa-history me-2"></i>Complaint History
+                            </h4>
+                            <div class="input-group input-group-sm w-25">
+                                <input type="text" class="form-control" placeholder="Search complaints...">
+                                <button class="btn btn-outline-light">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="table-responsive history-table-container">
+                                <table class="table table-hover mb-0 table-full-height">
+                                    <thead class="table-dark sticky-top">
+                                        <tr>
+                                            <th class="px-4 py-3">Category</th>
+                                            <th class="px-4 py-3">Subcategory</th>
+                                            <th class="px-4 py-3">Nature</th>
+                                            <th class="px-4 py-3">Status</th>
+                                            <th class="px-4 py-3">Date</th>
+                                            <th class="px-4 py-3">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="historyTableBody" class="table-body-full">
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </main>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script type="module" src="dashboard.js"></script>
+</body>
+</html>
