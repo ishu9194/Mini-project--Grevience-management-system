@@ -1,30 +1,17 @@
-const admin = require("firebase-admin");
+const { admin } = require("../firebaseAdmin");
 
-// 🔐 Firebase Admin initialization
-if (!admin.apps.length) {
-    const serviceAccount = require("../serviceAccountKey.json"); // make sure path correct
-
-    admin.initializeApp({
-        credential: admin.credential.cert(serviceAccount)
-    });
-}
-
-// ✅ Middleware function
 const verifyToken = async (req, res, next) => {
-
     try {
-
         const authHeader = req.headers.authorization;
 
         if (!authHeader || !authHeader.startsWith("Bearer ")) {
             return res.status(401).json({ message: "No token provided" });
         }
 
-        const token = authHeader.split("Bearer ")[1];
-
+        const token = authHeader.split(" ")[1]; // Safer split method
         const decodedToken = await admin.auth().verifyIdToken(token);
 
-        req.user = decodedToken; // attach user to request
+        req.user = decodedToken; // attach user info (uid, email) to request
         next();
 
     } catch (error) {

@@ -16,6 +16,8 @@ const db = getFirestore();
 const API_BASE = "http://localhost:5000/api";
 
 let currentUserData = null;
+let studentComplaints = []; // To store complaints for the modal
+let viewingComplaintId = null; // To track which complaint is open
 
 /* ================= AUTH ================= */
 onAuthStateChanged(auth, async (user) => {
@@ -92,6 +94,28 @@ function renderUser(data) {
     profilePic.onerror = function () {
         this.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(fullName)}&size=120&background=FF6B35&color=fff`;
     };
+
+    // ================= SUSPENSION CHECK =================
+    // If the admin has suspended this user in the database, lock the form!
+    if (data.status === "Suspended") {
+        const submitBtn = document.querySelector(".submit-btn");
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.classList.replace("btn-primary", "btn-danger");
+            submitBtn.innerHTML = `<i class="fas fa-ban me-2"></i>Account Suspended`;
+        }
+
+        // Add a warning banner to the top of the form
+        const formCard = document.querySelector(".complaint-form-card");
+        if (formCard && !document.getElementById("suspendWarning")) {
+            const warning = document.createElement("div");
+            warning.id = "suspendWarning";
+            warning.className = "alert alert-danger m-4 fw-bold shadow-sm";
+            warning.innerHTML = `<i class="fas fa-exclamation-triangle me-2"></i>Your account has been suspended by the administration. You can no lodge new complaints at this time.`;
+            formCard.insertBefore(warning, formCard.children[1]);
+        }
+    }
+    
 }
 
 /* ================= DATA & UI INITIALIZATION ================= */
@@ -322,9 +346,9 @@ async function loadComplaints(user) {
             headers: { "Authorization": `Bearer ${token}` }
         });
         if(res.ok) {
-            const complaints = await res.json();
-            updateHistoryTable(complaints);
-            updateStats(complaints);
+            studentComplaints = await res.json(); // Store locally
+            updateHistoryTable(studentComplaints);
+            updateStats(studentComplaints);
         }
     } catch (e) {
         console.error("Error fetching complaints:", e);
@@ -353,7 +377,11 @@ function updateHistoryTable(complaints) {
             <td>${c.nature}</td>
             <td><span class="status-badge ${badgeClass}">${c.status}</span></td>
             <td>${c.date}</td>
-            <td>-</td>
+            <td>
+                <button class="btn btn-sm btn-outline-primary" onclick="window.viewComplaint('${c.id}')">
+                    <i class="fas fa-eye"></i> View
+                </button>
+            </td>
         </tr>`;
     }).join("");
 }
@@ -378,3 +406,65 @@ window.showSection = function(section) {
     // Add active class to the clicked link (optional visual improvement)
     event.currentTarget.classList.add("active-nav");
 };
+
+/* ================= VIEW & DELETE COMPLAINT LOGIC ================= */
+window.viewComplaint = function(id) {
+    const complaint = studentComplaints.find(c => c.id === id);
+    if (!complaint) return;
+
+    viewingComplaintId = id;
+
+    // Populate Modal Data
+    document.getElementById("modalCategoryText").innerText = `${complaint.category} > ${complaint.subcategory}`;
+    document.getElementById("modalNatureText").innerText = complaint.nature || "N/A";
+    document.getElementById("modalDetailsText").innerText = complaint.details;
+
+    // Handle Admin Note Visibility
+    const noteContainer = document.getElementById("modalAdminNoteContainer");
+    if (complaint.adminNote && complaint.adminNote.trim() !== "") {
+        noteContainer.style.display = "block";
+        document.getElementById("modalAdminNoteText").innerText = complaint.adminNote;
+    } else {
+        noteContainer.style.display = "none";
+    }
+
+    // Handle Delete Button Visibility
+    const deleteBtn = document.getElementById("deleteComplaintBtn");
+    if (complaint.status === "Not Processed yet" || complaint.status === "Not Processed") {
+        deleteBtn.style.display = "block"; // Show if not processed
+    } else {
+        deleteBtn.style.display = "none"; // Hide if admin has started working on it
+    }
+
+    // Show the modal
+    new bootstrap.Modal(document.getElementById('viewComplaintModal')).show();
+};
+
+// Handle the Delete Button Click
+document.getElementById("deleteComplaintBtn")?.addEventListener("click", async () => {
+    if (!viewingComplaintId) return;
+
+    if (confirm("Are you sure you want to withdraw this complaint? This cannot be undone.")) {
+        try {
+            const user = auth.currentUser;
+            const token = await user.getIdToken();
+            
+            const response = await fetch(`${API_BASE}/complaints/${viewingComplaintId}`, {
+                method: "DELETE",
+                headers: { "Authorization": `Bearer ${token}` }
+            });
+
+            if (response.ok) {
+                alert("Complaint successfully withdrawn.");
+                bootstrap.Modal.getInstance(document.getElementById('viewComplaintModal')).hide();
+                loadComplaints(user); // Reload the table automatically!
+            } else {
+                const err = await response.json();
+                alert(err.error || "Failed to delete complaint.");
+            }
+        } catch (error) {
+            console.error("Delete Error:", error);
+            alert("Could not connect to the server.");
+        }
+    }
+});
