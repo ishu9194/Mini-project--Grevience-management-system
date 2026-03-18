@@ -98,4 +98,4 @@ router.put("/users/:id/status", async (req, res) => {
     }
 });
 
-module.exports = router;
+export default router;

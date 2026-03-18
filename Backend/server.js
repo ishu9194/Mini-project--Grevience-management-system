@@ -1,32 +1,37 @@
-const express = require("express");
-const cors = require("cors");
+import express from "express";
+import cors from "cors";
 
-const complaintRoutes = require("./routes/complaintRoutes");
-const adminRoutes = require("./routes/adminRoutes"); // Add this
+// Note: In ESM, you MUST include the .js extension for local files
+import complaintRoutes from "./routes/complaintRoutes.js";
+import adminRoutes from "./routes/adminRoutes.js";
 
 const app = express();
 
-app.use(cors());
+// 1. Setup CORS properly BEFORE routes
+app.use(cors({
+    origin: [
+        "https://your-firebase-app-url.web.app", 
+        "https://your-firebase-app-url.firebaseapp.com",
+        "http://localhost:5000", 
+        "http://127.0.0.1:5500"
+    ],
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    credentials: true
+}));
+
 app.use(express.json());
 
-// User routes
-app.use("/api/complaints", complaintRoutes);
-
-// Admin routes
-app.use("/api/admin", adminRoutes); // Add this
-
-app.listen(5000, () => {
-  console.log("Server running on http://localhost:5000");
-});
-
-// Add a ping route to wake up the server from the frontend
+// 2. Ping route for Render Keep-Alive
 app.get("/api/ping", (req, res) => {
-  res.status(200).send("Server is awake!");
+    res.status(200).send("Server is awake!");
 });
 
-// Update CORS to be more specific (Safer for Firebase hosting)
-app.use(cors({
-  origin: ["https://your-firebase-app-url.web.app", "http://localhost:5000", "http://127.0.0.1:5500"],
-  methods: ["GET", "POST", "PUT", "DELETE"],
-  credentials: true
-}));
+// 3. Routes
+app.use("/api/complaints", complaintRoutes);
+app.use("/api/admin", adminRoutes);
+
+// 4. Use Render's dynamic PORT
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+});

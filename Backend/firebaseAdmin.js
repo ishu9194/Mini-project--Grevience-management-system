@@ -1,5 +1,13 @@
-const admin = require("firebase-admin");
-const serviceAccount = require("./serviceAccountKey.json"); // Ensure this path is correct
+import admin from "firebase-admin";
+
+let serviceAccount;
+if (process.env.FIREBASE_SERVICE_ACCOUNT) {
+    serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+} else {
+    // You'll need to use dynamic import or a URL for local files in ESM
+    // But for Render, the Env Var is what matters.
+    serviceAccount = (await import("./serviceAccountKey.json", { assert: { type: "json" } })).default;
+}
 
 if (!admin.apps.length) {
     admin.initializeApp({
@@ -7,6 +15,5 @@ if (!admin.apps.length) {
     });
 }
 
-const db = admin.firestore();
-
-module.exports = { admin, db };
+export const db = admin.firestore();
+export { admin };
