@@ -1,17 +1,21 @@
-const express = require("express");
+import express from "express";
 const router = express.Router();
-const { db } = require("../firebaseAdmin");
-const verifyToken = require("../middleware/authMiddleware");
+
+// 1. Corrected imports (Must include .js extension)
+import { db } from "../firebaseAdmin.js";
+import verifyToken from "../middleware/authMiddleware.js";
 
 // Create complaint
 router.post("/", verifyToken, async (req, res) => {
   try {
     const complaint = req.body;
 
+    // Use the db instance imported from firebaseAdmin.js
     await db.collection("complaints").add({
       ...complaint,
-      userId: req.user.email, // Save their email for the admin table!
-      uid: req.user.uid,      // Save UID for their personal dashboard
+      status: "Not Processed yet", // Server-side default for security
+      userId: req.user.email,      // Tracked via verified token
+      uid: req.user.uid,           // Securely link to their account
       createdAt: new Date(),
     });
 
@@ -26,7 +30,7 @@ router.get("/", verifyToken, async (req, res) => {
   try {
     const snapshot = await db
       .collection("complaints")
-      .where("uid", "==", req.user.uid) // Filter by UID securely
+      .where("uid", "==", req.user.uid) // Secure filter by Firebase UID
       .get();
 
     const complaints = snapshot.docs.map(doc => ({
@@ -53,12 +57,12 @@ router.delete("/:id", verifyToken, async (req, res) => {
 
         const data = doc.data();
 
-        // 1. Security: Make sure this user owns the complaint
+        // Security: Ensure owner identity
         if (data.uid !== req.user.uid) {
             return res.status(403).json({ error: "Unauthorized to delete this complaint" });
         }
 
-        // 2. Logic: Make sure it hasn't been processed
+        // Logic: Only allow withdrawal if admin hasn't started yet
         if (data.status !== "Not Processed yet" && data.status !== "Not Processed") {
             return res.status(400).json({ error: "You cannot delete a complaint that is already being processed." });
         }
@@ -70,12 +74,5 @@ router.delete("/:id", verifyToken, async (req, res) => {
     }
 });
 
-// routes/complaintRoutes.js
-await db.collection("complaints").add({
-    ...complaint,
-    status: "Not Processed yet", // Force default on server-side
-    userId: req.user.email,
-    uid: req.user.uid,
-    createdAt: new Date(),
-});
-module.exports = router;
+// 2. Export default for ES Modules
+export default router;

@@ -1,7 +1,9 @@
-const express = require("express");
+import express from "express";
 const router = express.Router();
-const { db } = require("../firebaseAdmin");
-const verifyToken = require("../middleware/authMiddleware");
+
+// 1. Corrected imports for ES Modules (Must include .js)
+import { db } from "../firebaseAdmin.js";
+import verifyToken from "../middleware/authMiddleware.js";
 
 // Apply standard auth to ensure the user is logged in
 router.use(verifyToken);
@@ -24,7 +26,6 @@ router.get("/complaints", async (req, res) => {
             return {
                 id: doc.id,
                 ...data,
-                // Use the string date sent from frontend, fallback to formatted timestamp
                 date: data.date || (data.createdAt ? data.createdAt.toDate().toISOString().split('T')[0] : 'N/A')
             };
         });
@@ -63,17 +64,16 @@ router.delete("/complaints/:id", async (req, res) => {
     }
 });
 
-// Get All Users from FIRESTORE (Fixes the missing university issue)
+// Get All Users from FIRESTORE
 router.get("/users", async (req, res) => {
     try {
         const snapshot = await db.collection("users").get();
         const users = snapshot.docs.map(doc => ({
             id: doc.id,
             ...doc.data(),
-            status: doc.data().status || 'Active' // Default to active if missing
+            status: doc.data().status || 'Active'
         }));
         
-        // Filter out the admin from the users list
         const studentUsers = users.filter(user => user.email !== "admin@grievancehub.com");
         
         res.json(studentUsers);
@@ -86,7 +86,7 @@ router.get("/users", async (req, res) => {
 router.put("/users/:id/status", async (req, res) => {
     try {
         const { id } = req.params;
-        const { status } = req.body; // Expects 'Active' or 'Suspended'
+        const { status } = req.body;
 
         await db.collection("users").doc(id).update({
             status: status
