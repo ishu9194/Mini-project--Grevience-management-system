@@ -13,7 +13,7 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const db = getFirestore();
-const API_BASE = "http://localhost:5000/api";
+const API_BASE = "https://grievancehub-ty6l.onrender.com/api/admin";
 
 let currentUserData = null;
 let studentComplaints = []; // To store complaints for the modal
@@ -21,12 +21,29 @@ let viewingComplaintId = null; // To track which complaint is open
 
 /* ================= AUTH ================= */
 onAuthStateChanged(auth, async (user) => {
+    const statusText = document.getElementById('loader-status');
+    
     if (!user) {
         window.location.href = "login.html";
         return;
     }
-    await loadUserProfile(user);
-    await loadComplaints(user);
+
+    try {
+        if (statusText) statusText.innerText = "Waking up server...";
+        
+        // This is where you call your loadAdminData or loadComplaints
+        await loadAdminData(user); 
+        
+        // Success! Hide the loader
+        const loader = document.getElementById('app-loader');
+        if (loader) {
+            loader.style.opacity = '0';
+            setTimeout(() => loader.style.display = 'none', 500);
+        }
+    } catch (error) {
+        if (statusText) statusText.innerHTML = "Server is taking a moment... <br> Please wait.";
+        console.error("Initialization failed", error);
+    }
 });
 
 /* ================= LOAD PROFILE ================= */
@@ -466,5 +483,20 @@ document.getElementById("deleteComplaintBtn")?.addEventListener("click", async (
             console.error("Delete Error:", error);
             alert("Could not connect to the server.");
         }
+    }
+});
+
+const UI_SOUNDS = {
+    click: new Audio('https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3'),
+    success: new Audio('https://assets.mixkit.co/active_storage/sfx/1435/1435-preview.mp3'),
+    error: new Audio('https://assets.mixkit.co/active_storage/sfx/2955/2955-preview.mp3')
+};
+
+// Global click sound for all buttons
+document.addEventListener('click', (e) => {
+    if (e.target.tagName === 'BUTTON' || e.target.closest('.admin-link')) {
+        UI_SOUNDS.click.currentTime = 0; // Reset to start
+        UI_SOUNDS.click.volume = 0.2;
+        UI_SOUNDS.click.play();
     }
 });

@@ -1,7 +1,7 @@
 import { auth } from "./firebase-config.js";
 import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-const API_BASE_URL = 'http://localhost:5000/api/admin';
+const API_BASE_URL = 'https://grievancehub-ty6l.onrender.com/api/admin';
 let allComplaints = []; 
 let currentComplaints = [];
 let currentUsers = [];
@@ -9,18 +9,29 @@ let selectedComplaintId = null;
 
 // ================= AUTHENTICATION =================
 onAuthStateChanged(auth, async (user) => {
-    if (!user || user.email !== "admin@grievancehub.com") {
-        await signOut(auth);
+    const statusText = document.getElementById('loader-status');
+    
+    if (!user) {
         window.location.href = "login.html";
         return;
     }
-    
-    loadAdminProfilePic();
-    await loadAdminData(user);
-    setupEventListeners();
-    
-    // Force the UI to show the first tab properly on load
-    switchSection('overview', document.querySelector('.admin-link'));
+
+    try {
+        if (statusText) statusText.innerText = "Waking up server...";
+        
+        // This is where you call your loadAdminData or loadComplaints
+        await loadAdminData(user); 
+        
+        // Success! Hide the loader
+        const loader = document.getElementById('app-loader');
+        if (loader) {
+            loader.style.opacity = '0';
+            setTimeout(() => loader.style.display = 'none', 500);
+        }
+    } catch (error) {
+        if (statusText) statusText.innerHTML = "Server is taking a moment... <br> Please wait.";
+        console.error("Initialization failed", error);
+    }
 });
 
 // ================= ADMIN PROFILE PIC =================
@@ -541,3 +552,18 @@ function updateCharts() {
         } 
     });
 }
+
+const UI_SOUNDS = {
+    click: new Audio('https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3'),
+    success: new Audio('https://assets.mixkit.co/active_storage/sfx/1435/1435-preview.mp3'),
+    error: new Audio('https://assets.mixkit.co/active_storage/sfx/2955/2955-preview.mp3')
+};
+
+// Global click sound for all buttons
+document.addEventListener('click', (e) => {
+    if (e.target.tagName === 'BUTTON' || e.target.closest('.admin-link')) {
+        UI_SOUNDS.click.currentTime = 0; // Reset to start
+        UI_SOUNDS.click.volume = 0.2;
+        UI_SOUNDS.click.play();
+    }
+});

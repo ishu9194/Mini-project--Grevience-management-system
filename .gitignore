@@ -1,3 +1,5 @@
-node_modules
+node_modules/
+serviceAccountKey.json
 .env
-Backend/serviceAccountKey.json
+.firebase/
+.DS_Store

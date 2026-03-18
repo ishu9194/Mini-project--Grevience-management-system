@@ -1,0 +1,6 @@
+connectorId: example
+generate:
+  adminNodeSdk:
+    - outputDir: ..\..\Backend\src\dataconnect-admin-generated
+      package: "@dataconnect/admin-generated"
+      packageJsonDir: ..\..\Backend

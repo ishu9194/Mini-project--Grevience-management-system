@@ -1,0 +1,44 @@
+type User @table {
+  email: String!
+  passwordHash: String!
+  role: String!
+  createdAt: Timestamp!
+  firstName: String
+  lastName: String
+  studentId: String
+  department: Department
+}
+
+type Department @table {
+  name: String!
+  description: String
+  contactEmail: String
+}
+
+type Grievance @table {
+  title: String!
+  description: String!
+  status: String!
+  category: String!
+  submittedAt: Timestamp!
+  submitter: User
+  assignedToUser: User
+  resolvedAt: Timestamp
+  resolutionDetails: String
+}
+
+type GrievanceComment @table {
+  commentText: String!
+  createdAt: Timestamp!
+  grievance: Grievance
+  commenter: User
+  isPrivate: Boolean
+}
+
+type Attachment @table {
+  fileName: String!
+  fileUrl: String!
+  uploadedAt: Timestamp!
+  grievance: Grievance
+  mimeType: String
+}

@@ -214,3 +214,24 @@
     height: 300px;
     width: 100%;
 }
+
+/* Better mobile buttons */
+@media (max-width: 768px) {
+    .btn {
+        padding: 12px 20px; /* Bigger touch area */
+        font-size: 16px;
+    }
+    
+    /* Make tables scrollable horizontally on small screens */
+    .table-responsive {
+        border: 0;
+        margin-bottom: 0;
+    }
+
+    /* Force the sidebar to overlay on mobile instead of pushing content */
+    .sidebar {
+        position: fixed;
+        height: 100%;
+        z-index: 1040;
+    }
+}

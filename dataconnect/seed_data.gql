@@ -1,0 +1,91 @@
+mutation CreateDemoData @transaction @auth(level: USER, insecureReason: "Seed data is for demonstration purposes and does not require fine-grained access control.") {
+  department_insertMany(data: [
+    {
+      id: "a1b2c3d4-e5f6-7890-1234-567890abcdef",
+      name: "Computer Science",
+      description: "Department for Computer Science students.",
+      contactEmail: "cs@example.edu"
+    },
+    {
+      id: "f6e5d4c3-b2a1-0987-6543-210fedcba987",
+      name: "Electrical Engineering",
+      description: "Department for Electrical Engineering students.",
+      contactEmail: "ee@example.edu"
+    }
+  ])
+  user_insertMany(data: [
+    {
+      id: "1a2b3c4d-5e6f-7890-1234-567890abcdef",
+      email: "student1@example.edu",
+      passwordHash: "hashedpassword1",
+      role: "student",
+      createdAt: "2023-01-01T10:00:00Z",
+      firstName: "Alice",
+      lastName: "Smith",
+      studentId: "S001",
+      department: {id: "a1b2c3d4-e5f6-7890-1234-567890abcdef"}
+    },
+    {
+      id: "2a3b4c5d-6e7f-8901-2345-67890abcdef0",
+      email: "admin1@example.edu",
+      passwordHash: "hashedpasswordadmin1",
+      role: "admin",
+      createdAt: "2023-01-02T11:00:00Z",
+      firstName: "Bob",
+      lastName: "Johnson",
+      department: {id: "a1b2c3d4-e5f6-7890-1234-567890abcdef"}
+    },
+    {
+      id: "3b4c5d6e-7f8a-9012-3456-7890abcdef12",
+      email: "student2@example.edu",
+      passwordHash: "hashedpassword2",
+      role: "student",
+      createdAt: "2023-01-03T12:00:00Z",
+      firstName: "Charlie",
+      lastName: "Brown",
+      studentId: "S002",
+      department: {id: "f6e5d4c3-b2a1-0987-6543-210fedcba987"}
+    }
+  ])
+  grievance_insertMany(data: [
+    {
+      id: "4c5d6e7f-8a9b-0123-4567-890abcdef234",
+      title: "Missing Grade",
+      description: "My grade for CS101 is not showing up.",
+      status: "Open",
+      category: "Academic",
+      submittedAt: "2023-03-10T14:30:00Z",
+      submitter: {id: "1a2b3c4d-5e6f-7890-1234-567890abcdef"}
+    },
+    {
+      id: "5d6e7f8a-9b0c-1234-5678-90abcdef3456",
+      title: "Lab equipment malfunction",
+      description: "The oscilloscopes in the EE lab are not working.",
+      status: "InProgress",
+      category: "Infrastructure",
+      submittedAt: "2023-03-15T09:00:00Z",
+      submitter: {id: "3b4c5d6e-7f8a-9012-3456-7890abcdef12"},
+      assignedToUser: {id: "2a3b4c5d-6e7f-8901-2345-67890abcdef0"}
+    }
+  ])
+  attachment_insertMany(data: [
+    {
+      id: "6e7f8a9b-0c1d-2345-6789-0abcdef45678",
+      fileName: "missing_grade_screenshot.png",
+      fileUrl: "https://example.com/attachments/missing_grade_screenshot.png",
+      uploadedAt: "2023-03-10T14:35:00Z",
+      grievance: {id: "4c5d6e7f-8a9b-0123-4567-890abcdef234"},
+      mimeType: "image/png"
+    }
+  ])
+  grievanceComment_insertMany(data: [
+    {
+      id: "7f8a9b0c-1d2e-3456-7890-abcdef567890",
+      commentText: "Received the grievance, investigating now.",
+      createdAt: "2023-03-15T10:00:00Z",
+      grievance: {id: "5d6e7f8a-9b0c-1234-5678-90abcdef3456"},
+      commenter: {id: "2a3b4c5d-6e7f-8901-2345-67890abcdef0"},
+      isPrivate: false
+    }
+  ])
+}

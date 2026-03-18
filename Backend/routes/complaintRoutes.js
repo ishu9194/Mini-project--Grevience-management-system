@@ -70,4 +70,12 @@ router.delete("/:id", verifyToken, async (req, res) => {
     }
 });
 
+// routes/complaintRoutes.js
+await db.collection("complaints").add({
+    ...complaint,
+    status: "Not Processed yet", // Force default on server-side
+    userId: req.user.email,
+    uid: req.user.uid,
+    createdAt: new Date(),
+});
 module.exports = router;

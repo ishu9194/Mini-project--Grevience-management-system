@@ -1,0 +1,69 @@
+query GetAllGrievances @auth(level: USER, insecureReason: "This operation is safe to expose to all logged in users as it lists grievances accessible to them.") {
+  grievances(orderBy: [{submittedAt: DESC}]) {
+    id
+    title
+    description
+    status
+    category
+    submittedAt
+    submitter {
+      id
+      email
+      firstName
+      lastName
+    }
+    assignedToUser {
+      id
+      email
+      firstName
+      lastName
+    }
+    attachments_on_grievance {
+      id
+      fileName
+      fileUrl
+    }
+    grievanceComments_on_grievance(orderBy: [{createdAt: ASC}]) {
+      id
+      commentText
+      createdAt
+      commenter {
+        id
+        email
+        firstName
+      }
+      isPrivate
+    }
+  }
+}
+
+mutation CreateNewGrievance($title: String!, $description: String!, $category: String!) @auth(level: USER) {
+  grievance_insert(data: {
+    title: $title,
+    description: $description,
+    status: "Pending",
+    category: $category,
+    submittedAt_expr: "request.time",
+    submitterId_expr: "auth.uid"
+  })
+}
+
+query GetMyGrievances @auth(level: USER) {
+  grievances(where: {submitter: {id_expr: "auth.uid"}}, orderBy: [{submittedAt: DESC}]) {
+    id
+    title
+    status
+    category
+    submittedAt
+  }
+}
+
+mutation AddCommentToGrievance($grievanceId: UUID!, $commentText: String!, $isPrivate: Boolean) @auth(level: USER) {
+  grievanceComment_insert(data: {
+    grievanceId: $grievanceId,
+    commentText: $commentText,
+    createdAt_expr: "request.time",
+    commenterId_expr: "auth.uid",
+    isPrivate: $isPrivate
+  })
+}
