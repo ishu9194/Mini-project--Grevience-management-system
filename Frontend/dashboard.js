@@ -13,7 +13,7 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const db = getFirestore();
-const API_BASE = "https://grievancehub-ty6l.onrender.com/api/admin";
+const API_BASE ="https://grievancehub-ty6l.onrender.com/api";
 
 let currentUserData = null;
 let studentComplaints = []; // To store complaints for the modal
