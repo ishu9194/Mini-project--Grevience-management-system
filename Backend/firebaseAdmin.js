@@ -1,12 +1,23 @@
 import admin from "firebase-admin";
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
+
+// Recreate __dirname for ES Modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 let serviceAccount;
+
 if (process.env.FIREBASE_SERVICE_ACCOUNT) {
+    // Production (Render): Use the Environment Variable
     serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
 } else {
-    // You'll need to use dynamic import or a URL for local files in ESM
-    // But for Render, the Env Var is what matters.
-    serviceAccount = (await import("./serviceAccountKey.json", { assert: { type: "json" } })).default;
+    // Local Development: Read the JSON file directly 
+    // This bypasses the strict Node 22 JSON import rules
+    const serviceAccountPath = path.join(__dirname, "serviceAccountKey.json");
+    const fileContents = fs.readFileSync(serviceAccountPath, "utf-8");
+    serviceAccount = JSON.parse(fileContents);
 }
 
 if (!admin.apps.length) {
