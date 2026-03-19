@@ -599,3 +599,48 @@ document.addEventListener('click', (e) => {
         UI_SOUNDS.click.play();
     }
 });
+
+// --- GLOBAL UI FUNCTIONS ---
+// This must be outside of everything else so the HTML can "see" it!
+window.showSection = function(sectionId, clickedElement) {
+    const allSections = ['overview', 'all-complaints', 'pending', 'users', 'analytics'];
+    
+    // Hide all
+    allSections.forEach(id => {
+        const sec = document.getElementById(`${id}-section`);
+        if (sec) {
+            sec.style.display = 'none';
+            sec.classList.add('section-hidden');
+        }
+    });
+
+    // Show target
+    const targetSection = document.getElementById(`${sectionId}-section`);
+    if (targetSection) {
+        targetSection.style.display = 'block';
+        targetSection.classList.remove('section-hidden');
+    }
+
+    // Update active state
+    document.querySelectorAll('.admin-link').forEach(l => l.classList.remove('active-nav'));
+    if(clickedElement) clickedElement.classList.add('active-nav');
+    
+    // Auto-close mobile sidebar
+    if (window.innerWidth <= 992) {
+        const sidebar = document.getElementById('sidebar');
+        if (sidebar) sidebar.style.transform = 'translateX(-100%)'; 
+    }
+};
+
+// --- MOBILE SIDEBAR TOGGLE (The 3 Lines) ---
+document.getElementById('sidebarToggle')?.addEventListener('click', function() {
+    const sidebar = document.getElementById('sidebar');
+    if (sidebar) {
+        // Toggle the slide effect manually
+        if (sidebar.style.transform === 'translateX(0px)') {
+            sidebar.style.transform = 'translateX(-100%)';
+        } else {
+            sidebar.style.transform = 'translateX(0px)';
+        }
+    }
+});

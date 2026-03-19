@@ -10,10 +10,11 @@ const app = express();
 // 1. Setup CORS properly BEFORE routes
 app.use(cors({
     origin: [
-        "https://your-firebase-app-url.web.app", 
-        "https://your-firebase-app-url.firebaseapp.com",
+        "https://student-grievance-e3c67.web.app", 
+        "https://student-grievance-e3c67.firebaseapp.com",
         "http://localhost:5000", 
-        "http://127.0.0.1:5500"
+        "http://127.0.0.1:5500",
+        "http://localhost:5500"
     ],
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true
