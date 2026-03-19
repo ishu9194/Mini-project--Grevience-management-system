@@ -214,6 +214,8 @@ function updateUserStats() {
 // ================= TAB NAVIGATION =================
 function switchSection(sectionId, clickedElement) {
     const allSections = ['overview', 'all-complaints', 'pending', 'users', 'analytics'];
+    
+    // 1. Hide all sections
     allSections.forEach(id => {
         const sec = document.getElementById(`${id}-section`);
         if (sec) {
@@ -222,19 +224,39 @@ function switchSection(sectionId, clickedElement) {
         }
     });
 
+    // 2. Show the target section
     const targetSection = document.getElementById(`${sectionId}-section`);
     if (targetSection) {
         targetSection.style.display = 'block';
         targetSection.classList.remove('section-hidden');
     }
 
+    // 3. Update active link styling
     document.querySelectorAll('.admin-link').forEach(l => l.classList.remove('active-nav'));
     if(clickedElement) clickedElement.classList.add('active-nav');
     
+    // 4. Load charts if analytics is clicked
     if(sectionId === 'analytics') {
         setTimeout(updateCharts, 100); 
     }
+
+    // 5. MOBILE FIX: Auto-close the sidebar after clicking a link
+    if (window.innerWidth <= 992) {
+        const sidebar = document.getElementById('sidebar');
+        const mainContent = document.getElementById('mainContent');
+        if (sidebar) {
+            sidebar.classList.remove('active');
+            // Ensure it slides back out of view
+            sidebar.style.transform = 'translateX(-100%)'; 
+        }
+        if (mainContent) {
+            mainContent.classList.remove('expanded');
+        }
+    }
 }
+
+// CRITICAL FIX: Attach this to the window object so your HTML can trigger it!
+window.showSection = switchSection;
 
 // ================= ACTIONS =================
 window.openStatusModal = function(complaintId) {
@@ -350,7 +372,17 @@ function setupEventListeners() {
     });
 
     document.getElementById('statusFilter')?.addEventListener('change', filterComplaints);
+
+
+    document.getElementById('sidebarToggle')?.addEventListener('click', function() {
+    const sidebar = document.getElementById('sidebar');
+    const mainContent = document.getElementById('mainContent');
     
+    // Toggle 'active' for Mobile, 'collapsed' for Desktop
+    sidebar.classList.toggle('active');
+    sidebar.classList.toggle('collapsed');
+    mainContent.classList.toggle('expanded');
+});
 }
 
 async function handleBulkAction(newStatus, msg, alertType) {

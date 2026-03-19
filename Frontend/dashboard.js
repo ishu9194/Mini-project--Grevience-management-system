@@ -21,6 +21,7 @@ let viewingComplaintId = null; // To track which complaint is open
 
 /* ================= AUTH ================= */
 onAuthStateChanged(auth, async (user) => {
+    const loader = document.getElementById('app-loader'); // or 'loading-overlay'
     const statusText = document.getElementById('loader-status');
     
     if (!user) {
@@ -31,18 +32,21 @@ onAuthStateChanged(auth, async (user) => {
     try {
         if (statusText) statusText.innerText = "Waking up server...";
         
-        // This is where you call your loadAdminData or loadComplaints
-        await loadAdminData(user); 
+        // Ping Render to wake it up
+        await fetch('https://grievancehub-ty6l.onrender.com/api/ping').catch(() => {});
         
-        // Success! Hide the loader
-        const loader = document.getElementById('app-loader');
+        // Load the actual STUDENT data
+        await loadUserProfile(user);
+        await loadComplaints(user);
+        
+        // Hide the loader when done
         if (loader) {
             loader.style.opacity = '0';
             setTimeout(() => loader.style.display = 'none', 500);
         }
     } catch (error) {
-        if (statusText) statusText.innerHTML = "Server is taking a moment... <br> Please wait.";
-        console.error("Initialization failed", error);
+        console.error("Dashboard Load Error:", error);
+        if (statusText) statusText.innerHTML = "Connection failed. Please refresh.";
     }
 });
 
