@@ -10,28 +10,39 @@ let selectedComplaintId = null;
 // ================= AUTHENTICATION =================
 onAuthStateChanged(auth, async (user) => {
     const statusText = document.getElementById('loader-status');
-    
-    if (!user) {
+    const loader = document.getElementById('app-loader');
+
+    // 1. SECURITY CHECK: Kick out anyone who isn't the admin
+    if (!user || user.email !== "admin@grievancehub.com") {
+        await signOut(auth);
         window.location.href = "login.html";
         return;
     }
-
+    
+    // 2. ACTIVATE UI FIRST: Make sure tabs/buttons work immediately
+    setupEventListeners(); 
+    loadAdminProfilePic();
+    
+    // 3. LOAD DATA SAFELY
     try {
-        if (statusText) statusText.innerText = "Waking up server...";
+        if (statusText) statusText.innerText = "Fetching live complaints...";
         
-        // This is where you call your loadAdminData or loadComplaints
-        await loadAdminData(user); 
+        await loadAdminData(user);
         
         // Success! Hide the loader
-        const loader = document.getElementById('app-loader');
         if (loader) {
             loader.style.opacity = '0';
             setTimeout(() => loader.style.display = 'none', 500);
         }
-    } catch (error) {
+        document.body.classList.add('auth-verified');
+
+    } catch (e) {
+        console.error("Data load issue:", e);
         if (statusText) statusText.innerHTML = "Server is taking a moment... <br> Please wait.";
-        console.error("Initialization failed", error);
     }
+    
+    // 4. Force UI to show the overview tab
+    switchSection('overview', document.querySelector('.admin-link'));
 });
 
 // ================= ADMIN PROFILE PIC =================
@@ -343,72 +354,84 @@ window.toggleUserStatus = async function(userId) {
 }
 
 // ================= EVENT LISTENERS & FILTERS =================
+// --- 1. EVENT LISTENERS SETUP ---
 function setupEventListeners() {
-    const links = document.querySelectorAll('.admin-link');
-    links[0]?.addEventListener('click', function() { switchSection('overview', this); });
-    links[1]?.addEventListener('click', function() { switchSection('all-complaints', this); });
-    links[2]?.addEventListener('click', function() { switchSection('pending', this); });
-    links[3]?.addEventListener('click', function() { switchSection('users', this); });
-    links[4]?.addEventListener('click', function() { switchSection('analytics', this); });
+    
+    // A. Select All Checkbox
+    const selectAllBox = document.getElementById('selectAllRecent');
+    if (selectAllBox) {
+        selectAllBox.addEventListener('change', function() {
+            // Find all checkboxes in the table and match them to the Select All box
+            const checkboxes = document.querySelectorAll('.complaint-checkbox');
+            checkboxes.forEach(cb => cb.checked = this.checked);
+        });
+    }
 
-    document.getElementById('sidebarToggle')?.addEventListener('click', function() {
-        document.getElementById('sidebar').classList.toggle('collapsed');
-        document.getElementById('mainContent').classList.toggle('expanded');
+    // B. Quick Actions
+    document.getElementById('btnBulkClose')?.addEventListener('click', () => {
+        handleBulkAction('Closed', 'Bulk closed successfully!', 'success');
+    });
+    
+    document.getElementById('btnAssignTeam')?.addEventListener('click', () => {
+        handleBulkAction('In Process', 'Assigned to team!', 'info');
     });
 
-    // We only have one Select All box now, on the Recent Complaints table
-    document.getElementById('selectAllRecent')?.addEventListener('change', function() {
-        document.querySelectorAll('#recentComplaintsTable .complaint-checkbox').forEach(cb => cb.checked = this.checked);
-    });
-
-    document.getElementById('btnBulkClose')?.addEventListener('click', () => handleBulkAction('Closed', 'Bulk closed successfully!', 'success'));
-    document.getElementById('btnAssignTeam')?.addEventListener('click', () => handleBulkAction('In Process', 'Assigned to team!', 'info'));
-
-    document.querySelector('.logout-btn')?.addEventListener('click', async function() {
-        if (confirm('Logout from Admin Panel?')) {
-            await signOut(auth);
-            window.location.href = 'login.html';
+    // C. Logout Button
+    document.querySelector('.logout-btn')?.addEventListener('click', async () => {
+        if (confirm('Are you sure you want to logout from the Admin Panel?')) {
+            try {
+                await signOut(auth); // Make sure signOut is imported at the top!
+                window.location.href = 'login.html';
+            } catch (error) {
+                console.error("Logout failed", error);
+                alert("Failed to log out. Please check your connection.");
+            }
         }
     });
-
-    document.getElementById('statusFilter')?.addEventListener('change', filterComplaints);
-
-
-    document.getElementById('sidebarToggle')?.addEventListener('click', function() {
-    const sidebar = document.getElementById('sidebar');
-    const mainContent = document.getElementById('mainContent');
-    
-    // Toggle 'active' for Mobile, 'collapsed' for Desktop
-    sidebar.classList.toggle('active');
-    sidebar.classList.toggle('collapsed');
-    mainContent.classList.toggle('expanded');
-});
 }
 
+// --- 2. BULK ACTION LOGIC ---
 async function handleBulkAction(newStatus, msg, alertType) {
-    const selectedIds = Array.from(document.querySelectorAll('.complaint-checkbox:checked')).map(cb => cb.value);
-    if (selectedIds.length === 0) return alert("Please check at least one complaint in the table.");
-    
-    if (confirm(`Change status of ${selectedIds.length} items to ${newStatus}?`)) {
-        const token = await auth.currentUser.getIdToken();
+    // 1. Grab all the currently checked boxes
+    const checkedBoxes = document.querySelectorAll('.complaint-checkbox:checked');
+    const selectedIds = Array.from(checkedBoxes).map(cb => cb.value);
 
-        selectedIds.forEach(id => {
-            const cIndex = allComplaints.findIndex(c => c.id === id);
-            if(cIndex > -1) allComplaints[cIndex].status = newStatus;
+    if (selectedIds.length === 0) {
+        alert("Please select at least one complaint by checking the box next to it.");
+        return;
+    }
 
-            fetch(`${API_BASE_URL}/complaints/${id}/status`, {
-                method: 'PUT',
-                headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-                body: JSON.stringify({ status: newStatus, adminNote: 'Updated via Admin Bulk Action' })
-            }).catch(e => console.error("Failed to sync bulk update to DB", e));
-        });
-        
-        localStorage.setItem('mockComplaintsList', JSON.stringify(allComplaints));
-        filterComplaints();
-        showNotification(msg, alertType);
-        
-        const selectAllBox = document.getElementById('selectAllRecent');
-        if(selectAllBox) selectAllBox.checked = false;
+    if (confirm(`Are you sure you want to change ${selectedIds.length} complaints to "${newStatus}"?`)) {
+        try {
+            const token = await auth.currentUser.getIdToken();
+            
+            // 2. Send the update to Render for EVERY selected complaint
+            const updatePromises = selectedIds.map(id => {
+                return fetch(`${API_BASE_URL}/complaints/${id}/status`, {
+                    method: 'PUT',
+                    headers: { 
+                        'Authorization': `Bearer ${token}`, 
+                        'Content-Type': 'application/json' 
+                    },
+                    body: JSON.stringify({ status: newStatus, adminNote: 'Updated via Admin Bulk Action' })
+                });
+            });
+
+            // Wait for all updates to finish
+            await Promise.all(updatePromises);
+
+            // 3. Uncheck the 'Select All' box so it's ready for next time
+            const selectAllBox = document.getElementById('selectAllRecent');
+            if (selectAllBox) selectAllBox.checked = false;
+
+            // 4. Show success popup and reload the live data!
+            showNotification(msg, alertType);
+            await loadAdminData(auth.currentUser); 
+
+        } catch (error) {
+            console.error("Bulk action failed:", error);
+            alert("Failed to update complaints. Make sure your server is online.");
+        }
     }
 }
 
