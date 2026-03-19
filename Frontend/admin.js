@@ -413,7 +413,7 @@ async function handleBulkAction(newStatus, msg, alertType) {
                         'Authorization': `Bearer ${token}`, 
                         'Content-Type': 'application/json' 
                     },
-                    body: JSON.stringify({ status: newStatus, adminNote: 'Updated via Admin Bulk Action' })
+                    body: JSON.stringify({ status: newStatus, adminNote: '' })
                 });
             });
 
