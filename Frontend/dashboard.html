@@ -7,7 +7,21 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link href="dashboard.css" rel="stylesheet">
+    <link href="app.css" rel="stylesheet">
+    <style>
+        :root{
+            --admin-1: #ff6b35;
+            --admin-2: #f7931e;
+            --admin-3: #fbbf24;
+
+            --sidebar-gradient: linear-gradient(180deg, #ff6a00 0%, #fc801a 50%, #fc911f 100%)!important;
+            .active-nav {
+                background: rgba(255, 255, 255, 0.92)!important;
+                color: #ff6b35 !important;
+                box-shadow: 0 8px 25px rgba(255, 107, 53, 0.3);
+        }
+        }
+    </style>
 </head>
 <body>
     <div id="app-loader" style="position:fixed; top:0; left:0; width:100%; height:100%; background:linear-gradient(135deg, #FF6B35 0%, #F7931E 100%); z-index:9999; display:flex; flex-direction:column; justify-content:center; align-items:center; transition: opacity 0.5s ease;">
@@ -15,14 +29,22 @@
     <h4 class="text-white mt-4 fw-bold">GrievanceHub</h4>
     <p class="text-white-50" id="loader-status">Securing Session...</p>
 </div>
-    <nav class="navbar navbar-expand-lg navbar-dark fixed-top shadow-lg navbar-main" style="background: linear-gradient(135deg, #FF6B35 0%, #F7931E 100%); z-index: 1030;">
+    <nav class="navbar navbar-expand-lg navbar-dark fixed-top shadow-lg navbar-main" style="z-index: 1030;">
         <div class="container-fluid">
-            <a class="navbar-brand fw-bold fs-3 brand-glow" href="#">
-                <i class="fas fa-balance-scale me-2"></i>GrievanceHub
-            </a>
-            <button class="btn btn-outline-light btn-sm fw-bold logout-btn ms-auto">
-                <i class="fas fa-sign-out-alt me-1"></i>Logout
-            </button>
+            <div class="d-flex align-items-center gap-2">
+                <button class="btn btn-outline-light border-0" id="sidebarToggle" type="button" aria-label="Toggle sidebar" aria-expanded="true">
+                    <i class="fas fa-bars fs-4"></i>
+                </button>
+                <a class="navbar-brand fw-bold fs-3 brand-glow mb-0" href="#">
+                    <i class="fas fa-balance-scale me-2"></i>GrievanceHub
+                </a>
+            </div>
+
+            <div class="navbar-actions ms-auto">
+                <button class="btn btn-outline-light btn-sm fw-bold logout-btn" type="button">
+                    <i class="fas fa-sign-out-alt me-1"></i>Logout
+                </button>
+            </div>
         </div>
     </nav>
 
@@ -34,24 +56,24 @@
                     <input type="file" id="profileImageUpload" style="display: none;" accept="image/*">
                 </div>
                 <h5 id="userNameDisplay" class="mt-3 mb-0 fw-bold text-white"></h5>
-                <small class="text-muted">Student</small>
+                <small class="text-white-50">Student</small>
             </div>
 
             <nav class="nav flex-column p-3">
-                <a class="nav-link active-nav sidebar-link" onclick="showSection('dashboard')">
+                <a class="nav-link active-nav sidebar-link" onclick="showSection('dashboard', this)">
                     <i class="fas fa-th-large me-2"></i>Dashboard / Lodge
                 </a>
-                <a class="nav-link sidebar-link" onclick="showSection('account')">
+                <a class="nav-link sidebar-link" onclick="showSection('account', this)">
                     <i class="fas fa-cog me-2"></i>Account Settings
                 </a>
-                <a class="nav-link sidebar-link" onclick="showSection('history')">
+                <a class="nav-link sidebar-link" onclick="showSection('history', this)">
                     <i class="fas fa-history me-2"></i>Complaint History
                 </a>
             </nav>
         </div>
 
         <div class="flex-grow-1 main-content-wrapper">
-            <main class="main-content p-4">
+            <main class="main-content">
                 <section id="dashboard-section">
                     <div class="row mb-5">
                         <div class="col-lg-4 col-md-6 mb-4">
@@ -88,7 +110,7 @@
                             <i class="fas fa-edit me-2"></i>
                             <h4 class="mb-0 fw-bold">Register New Complaint</h4>
                         </div>
-                        <form id="complaintForm" class="p-5">
+                        <form id="complaintForm" class="p-3 p-lg-5">
                             <div class="row">
                                 <div class="col-md-6 mb-4">
                                     <label class="form-label fw-bold">Category <span class="text-danger">*</span></label>

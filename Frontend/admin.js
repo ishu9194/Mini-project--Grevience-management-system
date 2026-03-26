@@ -1,11 +1,16 @@
 import { auth } from "./firebase-config.js";
 import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import "./layout.js";
+import { initSidebar } from "./ui.js";
 
 const API_BASE_URL = 'https://grievancehub-ty6l.onrender.com/api/admin';
 let allComplaints = []; 
 let currentComplaints = [];
+let allComplaintsView = [];
 let currentUsers = [];
 let selectedComplaintId = null;
+
+const sidebarController = initSidebar({ sidebarId: "sidebar", toggleId: "sidebarToggle" });
 
 // ================= AUTHENTICATION =================
 onAuthStateChanged(auth, async (user) => {
@@ -98,7 +103,19 @@ async function loadAdminData(user) {
     }
 
     currentComplaints = [...allComplaints];
+    applyAllComplaintsFilter();
     updateUI();
+}
+
+function applyAllComplaintsFilter() {
+    const statusFilterEl = document.getElementById('statusFilter');
+    const statusFilter = statusFilterEl ? statusFilterEl.value : 'All Status';
+
+    allComplaintsView = allComplaints.filter(c => {
+        if (statusFilter === 'All Status') return true;
+        const mappedStatus = statusFilter === 'Not Processed' ? 'Not Processed yet' : statusFilter;
+        return c.status === mappedStatus || (mappedStatus === 'Not Processed yet' && c.status === 'Not Processed');
+    });
 }
 
 // ================= UPDATE UI =================
@@ -146,13 +163,13 @@ function updateAllComplaintsTable() {
     const tbody = document.getElementById('adminComplaintsTable');
     if(!tbody) return;
     
-    if (currentComplaints.length === 0) {
+    if (allComplaintsView.length === 0) {
         // Now accurately matching the 8 headers in the HTML
         tbody.innerHTML = `<tr><td colspan="8" class="text-center py-4 text-muted">No complaints found.</td></tr>`;
         return;
     }
 
-    tbody.innerHTML = currentComplaints.map(c => {
+    tbody.innerHTML = allComplaintsView.map(c => {
         const anonId = `Anon-${(c.id || '00000').substring(0,5).toUpperCase()}`;
         // Outputting exactly 8 data columns, perfectly aligned
         return `
@@ -251,19 +268,7 @@ function switchSection(sectionId, clickedElement) {
         setTimeout(updateCharts, 100); 
     }
 
-    // 5. MOBILE FIX: Auto-close the sidebar after clicking a link
-    if (window.innerWidth <= 992) {
-        const sidebar = document.getElementById('sidebar');
-        const mainContent = document.getElementById('mainContent');
-        if (sidebar) {
-            sidebar.classList.remove('active');
-            // Ensure it slides back out of view
-            sidebar.style.transform = 'translateX(-100%)'; 
-        }
-        if (mainContent) {
-            mainContent.classList.remove('expanded');
-        }
-    }
+    sidebarController.close();
 }
 
 // CRITICAL FIX: Attach this to the window object so your HTML can trigger it!
@@ -388,6 +393,12 @@ function setupEventListeners() {
             }
         }
     });
+
+    // D. All complaints status filter (only affects the All Complaints table)
+    document.getElementById('statusFilter')?.addEventListener('change', () => {
+        applyAllComplaintsFilter();
+        updateAllComplaintsTable();
+    });
 }
 
 // --- 2. BULK ACTION LOGIC ---
@@ -436,13 +447,8 @@ async function handleBulkAction(newStatus, msg, alertType) {
 }
 
 function filterComplaints() {
-    const statusFilter = document.getElementById('statusFilter').value;
-    currentComplaints = allComplaints.filter(c => {
-        if (statusFilter === 'All Status') return true;
-        const mappedStatus = statusFilter === 'Not Processed' ? 'Not Processed yet' : statusFilter;
-        return c.status === mappedStatus;
-    });
-    updateUI();
+    applyAllComplaintsFilter();
+    updateAllComplaintsTable();
 }
 
 function showNotification(message, type = 'success') {
@@ -623,47 +629,3 @@ document.addEventListener('click', (e) => {
     }
 });
 
-// --- GLOBAL UI FUNCTIONS ---
-// This must be outside of everything else so the HTML can "see" it!
-window.showSection = function(sectionId, clickedElement) {
-    const allSections = ['overview', 'all-complaints', 'pending', 'users', 'analytics'];
-    
-    // Hide all
-    allSections.forEach(id => {
-        const sec = document.getElementById(`${id}-section`);
-        if (sec) {
-            sec.style.display = 'none';
-            sec.classList.add('section-hidden');
-        }
-    });
-
-    // Show target
-    const targetSection = document.getElementById(`${sectionId}-section`);
-    if (targetSection) {
-        targetSection.style.display = 'block';
-        targetSection.classList.remove('section-hidden');
-    }
-
-    // Update active state
-    document.querySelectorAll('.admin-link').forEach(l => l.classList.remove('active-nav'));
-    if(clickedElement) clickedElement.classList.add('active-nav');
-    
-    // Auto-close mobile sidebar
-    if (window.innerWidth <= 992) {
-        const sidebar = document.getElementById('sidebar');
-        if (sidebar) sidebar.style.transform = 'translateX(-100%)'; 
-    }
-};
-
-// --- MOBILE SIDEBAR TOGGLE (The 3 Lines) ---
-document.getElementById('sidebarToggle')?.addEventListener('click', function() {
-    const sidebar = document.getElementById('sidebar');
-    if (sidebar) {
-        // Toggle the slide effect manually
-        if (sidebar.style.transform === 'translateX(0px)') {
-            sidebar.style.transform = 'translateX(-100%)';
-        } else {
-            sidebar.style.transform = 'translateX(0px)';
-        }
-    }
-});

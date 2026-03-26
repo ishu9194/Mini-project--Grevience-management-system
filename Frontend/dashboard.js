@@ -1,4 +1,6 @@
 import { auth } from "./firebase-config.js";
+import "./layout.js";
+import { initSidebar } from "./ui.js";
 import {
     onAuthStateChanged,
     signOut
@@ -18,6 +20,8 @@ const API_BASE ="https://grievancehub-ty6l.onrender.com/api";
 let currentUserData = null;
 let studentComplaints = []; // To store complaints for the modal
 let viewingComplaintId = null; // To track which complaint is open
+
+const sidebarController = initSidebar({ sidebarId: "sidebar", toggleId: "sidebarToggle" });
 
 /* ================= AUTH ================= */
 onAuthStateChanged(auth, async (user) => {
@@ -416,7 +420,7 @@ function updateStats(complaints) {
 }
 
 /* ================= SECTION SWITCH ================= */
-window.showSection = function(section) {
+window.showSection = function(section, clickedElement) {
     document.getElementById("dashboard-section").classList.add("section-hidden");
     document.getElementById("account-section").classList.add("section-hidden");
     document.getElementById("history-section").classList.add("section-hidden");
@@ -424,8 +428,9 @@ window.showSection = function(section) {
     document.getElementById(section + "-section").classList.remove("section-hidden");
 
     document.querySelectorAll(".sidebar-link").forEach(link => link.classList.remove("active-nav"));
-    // Add active class to the clicked link (optional visual improvement)
-    event.currentTarget.classList.add("active-nav");
+    if (clickedElement) clickedElement.classList.add("active-nav");
+
+    sidebarController.close();
 };
 
 /* ================= VIEW & DELETE COMPLAINT LOGIC ================= */
