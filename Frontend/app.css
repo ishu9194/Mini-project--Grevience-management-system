@@ -382,15 +382,137 @@ body.sidebar-open {
 }
 
 .logout-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
   border-radius: 999px;
   padding: 8px 18px;
   transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+@media (max-width: 767.98px) {
+  .logout-btn .logout-text {
+    display: none;
+  }
+
+  .logout-btn {
+    padding: 0.45rem !important;
+    width: 2.25rem;
+    height: 2.25rem;
+    justify-content: center;
+    line-height: 1;
+  }
+
+  .logout-btn .logout-icon {
+    margin: 0 !important;
+  }
 }
 
 @media (hover: hover) {
   .logout-btn:hover {
     transform: scale(1.03);
     box-shadow: 0 8px 25px rgba(255, 255, 255, 0.26);
+  }
+}
+
+/* Mobile-first "Compact Index Card" tables */
+@media (max-width: 767px) {
+  .compact-index-table-container {
+    padding-left: 8px !important;
+    padding-right: 8px !important;
+  }
+
+  .compact-index-cards thead {
+    display: none;
+  }
+
+  .compact-index-cards tbody {
+    display: block;
+  }
+
+  .compact-index-cards tbody tr {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-areas:
+      "topLeft topRight"
+      "midLeft midRight"
+      "actions actions";
+    padding: 10px;
+    margin-bottom: 10px;
+    border: 1px solid rgba(15, 23, 42, 0.12);
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.85);
+  }
+
+  .compact-index-cards tbody td {
+    border: 0 !important;
+    padding: 2px 0 !important;
+    background: transparent !important;
+  }
+
+  .compact-index-cards tbody td:last-child {
+    justify-self: start;
+  }
+
+  /* Admin: 8-column desktop table -> compact cards */
+  .compact-index-cards--admin tbody td:nth-child(3),
+  .compact-index-cards--admin tbody td:nth-child(4),
+  .compact-index-cards--admin tbody td:nth-child(5) {
+    display: none;
+  }
+
+  .compact-index-cards--admin tbody td:nth-child(1) {
+    grid-area: topLeft;
+    font-weight: 700;
+  }
+
+  .compact-index-cards--admin tbody td:nth-child(7) {
+    grid-area: topRight;
+    justify-self: end;
+    color: rgba(15, 23, 42, 0.75);
+    font-size: 0.9rem;
+  }
+
+  .compact-index-cards--admin tbody td:nth-child(2) {
+    grid-area: midLeft;
+  }
+
+  .compact-index-cards--admin tbody td:nth-child(6) {
+    grid-area: midRight;
+    justify-self: end;
+  }
+
+  .compact-index-cards--admin tbody td:nth-child(8) {
+    grid-area: actions;
+    padding-top: 8px !important;
+  }
+
+  /* Dashboard: 6-column desktop table -> compact cards */
+  .compact-index-cards--dashboard tbody td:nth-child(2),
+  .compact-index-cards--dashboard tbody td:nth-child(3) {
+    display: none;
+  }
+
+  .compact-index-cards--dashboard tbody td:nth-child(1) {
+    grid-area: topLeft;
+    font-weight: 700;
+  }
+
+  .compact-index-cards--dashboard tbody td:nth-child(5) {
+    grid-area: topRight;
+    justify-self: end;
+    color: rgba(15, 23, 42, 0.75);
+    font-size: 0.9rem;
+  }
+
+  .compact-index-cards--dashboard tbody td:nth-child(4) {
+    grid-area: midRight;
+    justify-self: end;
+  }
+
+  .compact-index-cards--dashboard tbody td:nth-child(6) {
+    grid-area: actions;
+    padding-top: 8px !important;
   }
 }
 

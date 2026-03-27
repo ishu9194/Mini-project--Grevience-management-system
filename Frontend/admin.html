@@ -14,6 +14,26 @@
         --brand-2: #1E40AF;
         --brand-3: #3B82F6;
         }
+
+        @media (max-width: 767.98px) {
+            .main-content {
+                margin-left: 5px !important;
+                margin-right: 5px !important;
+                padding-left: 5px !important;
+                padding-right: 5px !important;
+            }
+
+            .navbar-main {
+                padding-left: 5px !important;
+                padding-right: 5px !important;
+            }
+
+            .admin-full-table-card {
+                width: 100%;
+                margin-left: 0 !important;
+                margin-right: 0 !important;
+            }
+        }
     </style>
 </head>
 <body>
@@ -33,8 +53,8 @@
                 </a>
             </div>
             <div class="navbar-actions">
-                <button class="btn btn-outline-light btn-sm fw-bold logout-btn" type="button">
-                    <i class="fas fa-sign-out-alt me-1"></i>Logout
+                <button class="btn btn-outline-light btn-sm fw-bold logout-btn" type="button" aria-label="Logout">
+                    <i class="fas fa-sign-out-alt logout-icon" aria-hidden="true"></i><span class="logout-text">Logout</span>
                 </button>
             </div>
         </div>
@@ -132,8 +152,8 @@
                                 </select>
                             </div>
                         </div>
-                        <div class="table-responsive">
-                            <table class="table table-hover mb-0 admin-complaints-table">
+                        <div class="table-responsive compact-index-table-container">
+                            <table class="table table-hover mb-0 admin-complaints-table compact-index-cards compact-index-cards--admin">
                                <thead class="table-dark sticky-top">
                                     <tr>
                                         <th>User ID</th>

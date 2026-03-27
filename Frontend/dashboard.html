@@ -21,6 +21,26 @@
                 box-shadow: 0 8px 25px rgba(255, 107, 53, 0.3);
         }
         }
+
+        @media (max-width: 767.98px) {
+            .main-content {
+                margin-left: 5px !important;
+                margin-right: 5px !important;
+                padding-left: 5px !important;
+                padding-right: 5px !important;
+            }
+
+            .navbar-main {
+                padding-left: 5px !important;
+                padding-right: 5px !important;
+            }
+
+            .history-card {
+                width: 100%;
+                margin-left: 0 !important;
+                margin-right: 0 !important;
+            }
+        }
     </style>
 </head>
 <body>
@@ -41,8 +61,8 @@
             </div>
 
             <div class="navbar-actions ms-auto">
-                <button class="btn btn-outline-light btn-sm fw-bold logout-btn" type="button">
-                    <i class="fas fa-sign-out-alt me-1"></i>Logout
+                <button class="btn btn-outline-light btn-sm fw-bold logout-btn" type="button" aria-label="Logout">
+                    <i class="fas fa-sign-out-alt logout-icon" aria-hidden="true"></i><span class="logout-text">Logout</span>
                 </button>
             </div>
         </div>
@@ -237,8 +257,8 @@
                             </div>
                         </div>
                         <div class="card-body p-0">
-                            <div class="table-responsive history-table-container">
-                                <table class="table table-hover mb-0 table-full-height">
+                            <div class="table-responsive history-table-container compact-index-table-container">
+                                <table class="table table-hover mb-0 table-full-height compact-index-cards compact-index-cards--dashboard">
                                     <thead class="table-dark sticky-top">
                                         <tr>
                                             <th class="px-4 py-3">Category</th>
