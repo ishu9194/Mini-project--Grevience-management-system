@@ -369,6 +369,24 @@ The `.github/workflows/keep_alive.yml` automatically pings the Render backend ev
 
 ---
 
+### 🚧 Currently Working On
+
+**1. Role-Based Admin System**
+* **Goal:** Replacing the hardcoded admin email with a scalable `role` field (`"student"` | `"admin"`) in Firestore.
+* **Status:** Updating `authMiddleware.js` for role verification and creating a script to seed the initial admin.
+* **Why:** Moves away from brittle email checks to a secure, production-ready system that supports multiple admins.
+
+**2. API Validation & Rate Limiting**
+* **Goal:** Securing the backend against spam and abuse.
+* **Status:** Implementing `express-validator` to block empty/invalid complaints and `express-rate-limit` (max 5 requests per 15 mins).
+* **Why:** Protects the database and ensures production-level API reliability.
+
+**3. Data Schema Documentation**
+* **Goal:** Mapping out the NoSQL database structure.
+* **Status:** Adding a "Data Schema" section to this README outlining `users` and `complaints` collections, required fields, and custom indexes.
+* **Why:** The code explains the API, but clear documentation is needed to explain the shape of the data.
+
+---
 
 ## Team
 
